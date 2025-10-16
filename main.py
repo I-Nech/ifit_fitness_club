@@ -23,21 +23,24 @@ from telegram.ext import (
     MessageHandler,
     filters,
     CallbackQueryHandler,
+    PicklePersistence,
 )
 
 from handlers.progrev_handlers import start, get_answer, get_name, get_number, get_mail, get_agree
-from config.states import FIRST_MASSAGE, GET_NAME, GET_NUMBER, GET_MAIL, GET_AGREE, GET_INFO, GET_INLINE_BUTTON
+from config.states import FIRST_MASSAGE, GET_NAME, GET_NUMBER, GET_MAIL, GET_AGREE, GET_INFO, GET_INLINE_BUTTON, GET_CHOICE
 from config.config import TELEGRAM_TOKEN
-from handlers.lead_magnet_handlers import get_info, get_inline_button
-
+from handlers.lead_magnet_handlers import get_info, get_inline_button, get_choice
+from db.database import create_tables
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 if __name__ == "__main__":
-    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    persistens = PicklePersistence(filepath='i_fit_bot')
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).persistence(persistens).post_init(create_tables).build()
 
     # handler - это обработчик который будет обрабатывать команды(что угодно)
     # CommandHandler - это обработчик , который будет обрабатывать команды
@@ -56,16 +59,23 @@ if __name__ == "__main__":
                 MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_mail)
             ],
             GET_AGREE: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_agree)
+                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_agree),
+                CallbackQueryHandler(callback=get_inline_button)
             ],
             GET_INFO: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_info)
+                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_info),
+                
             ],
             GET_INLINE_BUTTON: [
                 CallbackQueryHandler(callback=get_inline_button)
             ],
+            GET_CHOICE: [
+                CallbackQueryHandler(callback=get_choice)
+            ]
         },
         fallbacks=[CommandHandler("start", start)],
+        persistent=True,
+        name="conv_handler"
     )
 
     application.add_handler(conv_handler)

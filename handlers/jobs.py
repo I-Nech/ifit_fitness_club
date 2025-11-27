@@ -1,4 +1,3 @@
-from pydoc import text
 from telegram.ext import ContextTypes
 
 
@@ -9,4 +8,5 @@ async def send_job_message(context: ContextTypes.DEFAULT_TYPE):
         text=job.data["message"],
         reply_markup=job.data["markup"],
         parse_mode="MarkdownV2",
+        
     )

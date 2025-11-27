@@ -1,6 +1,6 @@
-def foo(a, *args, b=5, **kwargs):
-    print(a,b)
-    print(args)
-    print(kwargs)
+def foo(id, **kwargs):
+    print(id)
+    for p,v in kwargs.items():
+        print(p,v)
 
-foo(3, 6, 4, b=7, c=5, d = 7)
+foo(3, b=7, c=5, d = 7)

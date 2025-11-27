@@ -9,6 +9,7 @@ from telegram.ext import (
 from config.states import GET_INLINE_BUTTON, GET_CHOICE
 from config.texts import lead_magnets
 
+
 async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("Петли TRX", callback_data="Петли")],
@@ -29,52 +30,137 @@ async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return GET_INLINE_BUTTON
 
+
 async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Вернуться к списку", callback_data="Вернуться к списку"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "Узнать больше о клубе IFIT", callback_data="Узнать больше"
+            )
+        ],
+    ]
+    markup = InlineKeyboardMarkup(keyboard)
+    await query.answer()
+    lead_magnet = lead_magnets[query.data]
+    # /-начиная от корня ./ - текущая папка ../ - на папку назад
+    # photo = open("./static/trx.jpg", "rb")
+    photo = open(lead_magnet["image"], "rb")
+    # что если пилатес то send_video
+    try:
+        await context.bot.send_photo(
+            chat_id=update.effective_chat.id,
+            photo=photo,
+            caption=lead_magnet["caption"] + "\n" + lead_magnet["text"],
+            reply_markup=markup,
+        )
+    except Exception as e:
+        await context.bot.send_photo(
+            chat_id=update.effective_chat.id,
+            photo=photo,
+            caption=lead_magnet["caption"],
+        )
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=lead_magnet["text"],
+            reply_markup=markup,
+        )
+
+    photo.close()
+    return GET_CHOICE
+
+    if query.data == "yes":
+        query = update.callback_query
+        await query.delete_message()  # можно сделать только инлайн кнопаками
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Спасибо за ответ! Я всегда буду тут, напиши /start если захочешь снова получить гайд.",
+        )
+
+        # context.user_data.clear() #- удаление словаря с данными пользователя
+        # await query.answer('Спасибо за ответ!', show_alert=True)
+        # await query.answer('Спасибо за ответ!')
+        # await query.answer() # ответ может быть пустой
+
+
+async def get_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if query.data == "Вернуться к списку":
+        return await get_info(update, context)
+
+
+async def get_more_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Наш инcтаграм", url="https://www.instagram.com/ifit_fitnessclub"
+            ),
+            InlineKeyboardButton(
+                "Вернуться к списку", callback_data="Вернуться к списку"
+            )
+        ],
+    ]
+    markup = InlineKeyboardMarkup(keyboard)
     await query.answer()
     lead_magnet = lead_magnets[query.data]
     # /-начиная от корня ./ - текущая папка ../ - на папку назад
     # photo = open("./static/trx.jpg", "rb")
     photo = open(lead_magnet["image"], "rb")
     await context.bot.send_photo(
-        chat_id=update.effective_chat.id, photo=photo, caption=lead_magnet["caption"]
-    )
-    await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=lead_magnet["text"],
-    )
-    photo.close()
-    return GET_CHOICE
-
-    if query.data == 'yes':
-        query = update.callback_query
-        await query.delete_message() # можно сделать только инлайн кнопаками
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="Спасибо за ответ! Я всегда буду тут, напиши /start если захочешь снова получить гайд.",
-        )
-
-    if query.data == "Вернуться к списку":
-        return GET_INLINE_BUTTON    
-
-        # context.user_data.clear() #- удаление словаря с данными пользователя
-        # await query.answer('Спасибо за ответ!', show_alert=True) 
-        # await query.answer('Спасибо за ответ!') 
-        # await query.answer() # ответ может быть пустой
-        
-async def get_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("Вернуться к списку", callback_data="Вернуться к списку")],
-        [InlineKeyboardButton("Узнать больше о клубе IFIT", callback_data="Узнать больше")],
-    ]
-    markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Что будем делать дальше?",
+        photo=photo,
+        caption=lead_magnet["caption"] + "\n" + lead_magnet["text"],
         reply_markup=markup,
     )
-    return GET_INLINE_BUTTON    
-    
+    photo.close()
+    return GET_INLINE_BUTTON
 
-        
+async def get_inline_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Вернуться к списку", callback_data="Вернуться к списку"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "Узнать больше о клубе IFIT", callback_data="Узнать больше"
+            )
+        ],
+    ]
+    markup = InlineKeyboardMarkup(keyboard)
+    await query.answer()
+    lead_magnet = lead_magnets[query.data]
     
+   
+    if len(lead_magnet["text"]) < 1024:
+        #video= open(lead_magnet["video"], "rb")
+        await context.bot.send_video(
+            chat_id=update.effective_chat.id,
+            video=lead_magnet['file_id'],
+            caption=lead_magnet["caption"] + "\n" + lead_magnet["text"],
+            reply_markup=markup,
+        )
+    else:
+        #video= open(lead_magnet["video"], "rb")
+        await context.bot.send_video(
+            chat_id=update.effective_chat.id,
+            video=lead_magnet['file_id'],
+            caption=lead_magnet["caption"],
+        )
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=lead_magnet["text"],
+            reply_markup=markup,
+        )
+
+    
+    return GET_CHOICE

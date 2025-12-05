@@ -47,6 +47,7 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     markup = InlineKeyboardMarkup(keyboard)
     await query.answer()
+    logger.info('ОШИБКА ТУТ 😡')
     lead_magnet = lead_magnets[query.data]
     # /-начиная от корня ./ - текущая папка ../ - на папку назад
     # photo = open("./static/trx.jpg", "rb")
@@ -59,18 +60,20 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             caption=lead_magnet["caption"] + "\n" + lead_magnet["text"],
             reply_markup=markup,
         )
+    
     except Exception as e:
         await context.bot.send_photo(
             chat_id=update.effective_chat.id,
             photo=photo,
             caption=lead_magnet["caption"],
         )
+        logger.info('ОШИБКА ТУТ 🥶')
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=lead_magnet["text"],
             reply_markup=markup,
         )
-
+        logger.info('ОШИБКА ТУТ 🤡')
     photo.close()
     return GET_CHOICE
 

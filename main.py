@@ -38,9 +38,21 @@ async def abc(update, context):
 
 if __name__ == "__main__":
     persistence = PicklePersistence(filepath='i_fit_bot')
+    # persistence_path = 'i_fit_bot'
+    # if os.path.exists(persistence_path):
+    #     if os.stat(persistence_path).st_size == 0:
+    #         print(f"Файл {persistence_path} пустой. Удаляю для сброса состояния.")
+    #         os.remove(persistence_path)
+    #     else:
+    #         print(f"Файл {persistence_path} существует и не пустой.")
+    # else:
+    #     print(f"Файл {persistence_path} не найден, он будет создан при запуске.")
+
+
+    # persistence = PicklePersistence(filepath=persistence_path)
+    persistence = PicklePersistence(filepath='i_fit_bot')
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).persistence(persistence).post_init(create_tables).build()
 
-    
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={

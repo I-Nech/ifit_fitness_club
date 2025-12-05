@@ -59,6 +59,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
        logger.info(f'Пользователь{update._effective_user.id} снова пришел ❤️') # КАК ПРИСВОИТЬ/ ЗАМЕНИТЬ ТЭГ ЕСЛИ ПОЛЬЗОВАТЕЛЬ НЕ НОВЫЙ??
        
        await rename_user_tag(update.effective_user.id,'новый', 'не новый')
+       logger.info('ОШИБКА  ТУТ🤮 ')
        logger.info(f'Пользователь{update._effective_user.id} добавлен в таблицу user_tags 🆗') 
        
     keyboard = [["Да", "Нет"]]

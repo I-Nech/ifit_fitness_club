@@ -8,7 +8,7 @@ from telegram.ext import (
 )
 from config.states import GET_INLINE_BUTTON, GET_CHOICE
 from config.texts import lead_magnets
-
+from logs.logger import logger 
 
 async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
@@ -53,15 +53,16 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # photo = open("./static/trx.jpg", "rb")
     photo = open(lead_magnet["image"], "rb")
     # что если пилатес то send_video
-    try:
+    caption = lead_magnet["caption"] + "\n" + lead_magnet["text"]
+    if len(caption) < 1024:
         await context.bot.send_photo(
             chat_id=update.effective_chat.id,
             photo=photo,
-            caption=lead_magnet["caption"] + "\n" + lead_magnet["text"],
+            caption=caption,
             reply_markup=markup,
         )
     
-    except Exception as e:
+    else:
         await context.bot.send_photo(
             chat_id=update.effective_chat.id,
             photo=photo,

@@ -4,3 +4,4 @@ __pycache__
 *.db
 i_fit_bot
 users.csv
+.env-prod

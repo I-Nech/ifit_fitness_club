@@ -72,8 +72,7 @@ if __name__ == "__main__":
                 CallbackQueryHandler(callback=get_inline_button)
             ],
             GET_INFO: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_info),
-                
+                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_info),   
             ],
             GET_INLINE_BUTTON: [
                 CallbackQueryHandler(pattern="Узнать больше",callback=get_more_info),

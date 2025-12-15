@@ -46,6 +46,7 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     markup = InlineKeyboardMarkup(keyboard)
     await query.answer()
+    await query.delete_message()
     lead_magnet = lead_magnets[query.data] 
     
     photo = open(lead_magnet["image"], "rb")

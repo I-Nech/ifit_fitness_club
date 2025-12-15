@@ -6,7 +6,7 @@ from telegram import (
 from telegram.ext import (
     ContextTypes,
 )
-from config.states import GET_INLINE_BUTTON, GET_CHOICE
+from config.states import GET_INFO, GET_INLINE_BUTTON, GET_CHOICE
 from config.texts import lead_magnets
 from logs.logger import logger 
 
@@ -30,7 +30,6 @@ async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return GET_INLINE_BUTTON
 
-
 async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     keyboard = [
@@ -47,12 +46,9 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     markup = InlineKeyboardMarkup(keyboard)
     await query.answer()
-    logger.info('ОШИБКА ТУТ 😡')
-    lead_magnet = lead_magnets[query.data]
-    # /-начиная от корня ./ - текущая папка ../ - на папку назад
-    # photo = open("./static/trx.jpg", "rb")
+    lead_magnet = lead_magnets[query.data] 
+    
     photo = open(lead_magnet["image"], "rb")
-    # что если пилатес то send_video
     caption = lead_magnet["caption"] + "\n" + lead_magnet["text"]
     if len(caption) < 1024:
         await context.bot.send_photo(
@@ -68,13 +64,12 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             photo=photo,
             caption=lead_magnet["caption"],
         )
-        logger.info('ОШИБКА ТУТ 🥶')
+        
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=lead_magnet["text"],
             reply_markup=markup,
-        )
-        logger.info('ОШИБКА ТУТ 🤡')
+        ) 
     photo.close()
     return GET_CHOICE
 
@@ -86,17 +81,13 @@ async def get_inline_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="Спасибо за ответ! Я всегда буду тут, напиши /start если захочешь снова получить гайд.",
         )
 
-        # context.user_data.clear() #- удаление словаря с данными пользователя
-        # await query.answer('Спасибо за ответ!', show_alert=True)
-        # await query.answer('Спасибо за ответ!')
-        # await query.answer() # ответ может быть пустой
-
-
 async def get_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    
     if query.data == "Вернуться к списку":
         return await get_info(update, context)
+        
 
 
 async def get_more_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -107,15 +98,13 @@ async def get_more_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Наш инcтаграм", url="https://www.instagram.com/ifit_fitnessclub"
             ),
             InlineKeyboardButton(
-                "Вернуться к списку", callback_data="Вернуться к списку"
+                 "Вернуться к списку", callback_data="Вернуться к списку"
             )
         ],
     ]
     markup = InlineKeyboardMarkup(keyboard)
     await query.answer()
     lead_magnet = lead_magnets[query.data]
-    # /-начиная от корня ./ - текущая папка ../ - на папку назад
-    # photo = open("./static/trx.jpg", "rb")
     photo = open(lead_magnet["image"], "rb")
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
@@ -164,7 +153,5 @@ async def get_inline_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=update.effective_chat.id,
             text=lead_magnet["text"],
             reply_markup=markup,
-        )
-
-    
+        )   
     return GET_CHOICE

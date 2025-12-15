@@ -38,18 +38,18 @@ async def abc(update, context):
 
 if __name__ == "__main__":
     persistence = PicklePersistence(filepath='i_fit_bot')
-    # persistence_path = 'i_fit_bot'
-    # if os.path.exists(persistence_path):
-    #     if os.stat(persistence_path).st_size == 0:
-    #         print(f"Файл {persistence_path} пустой. Удаляю для сброса состояния.")
-    #         os.remove(persistence_path)
-    #     else:
-    #         print(f"Файл {persistence_path} существует и не пустой.")
-    # else:
-    #     print(f"Файл {persistence_path} не найден, он будет создан при запуске.")
+    persistence_path = 'i_fit_bot'
+    if os.path.exists(persistence_path):
+        if os.stat(persistence_path).st_size == 0:
+            print(f"Файл {persistence_path} пустой. Удаляю для сброса состояния.")
+            os.remove(persistence_path)
+        else:
+            print(f"Файл {persistence_path} существует и не пустой.")
+    else:
+        print(f"Файл {persistence_path} не найден, он будет создан при запуске.")
 
 
-    # persistence = PicklePersistence(filepath=persistence_path)
+    persistence = PicklePersistence(filepath=persistence_path)
     persistence = PicklePersistence(filepath='i_fit_bot')
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).persistence(persistence).post_init(create_tables).build()
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
                 MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_mail)
             ],
             GET_AGREE: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, callback=get_agree),
+                MessageHandler(filters.Regex('^(Да|Нет)$'), callback=get_agree), # РЕГУЛЯРКА
                 CallbackQueryHandler(callback=get_inline_button)
             ],
             GET_INFO: [
@@ -78,6 +78,7 @@ if __name__ == "__main__":
             GET_INLINE_BUTTON: [
                 CallbackQueryHandler(pattern="Узнать больше",callback=get_more_info),
                 CallbackQueryHandler(pattern="^(Пилатес|НЯП)$",callback=get_inline_video),
+                CallbackQueryHandler(pattern="^Вернуться к списку$",callback=get_info),
                 CallbackQueryHandler(callback=get_inline_button)
             ],
             GET_CHOICE: [

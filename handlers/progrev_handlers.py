@@ -24,7 +24,6 @@ from config.states import (
 from config.config import ADMIN_ID
 # import os
 
-
 from utils.escape_symvol import escape_symvol
 import asyncio
 from handlers.jobs import send_job_message
@@ -35,17 +34,10 @@ from logs.logger import logger
 from db.user_tags_crud import create_user_tag, rename_user_tag
 from config.config import ADMIN_ID
 from handlers.admins_handler import admins_start
+from config.jobtexsts import jobtext
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # update -  это полная информация о том что произошло в чате(сообщении)
-    # update.effective_user - это информация о пользователе, который отправил сообщение
-    # update.effective_chat - это информация о чате в котром произошло событие(информация о диологе:диалг напр с ботом,
-    #  группой и т)
-    # update.effective_message - это информация о сообщении , которое отправил пользователь
-    # context - это контекст, в котором происходит событие(побочные действия котрые наш бот будет уметь делать(в контексте
-    # будем данные между разными функциями передавать, будем что-то запоминать, будем вызывать отложенные действия,
-    # вспомогательные действия которые он будет делать))
-
+    
     if update.effective_user.id == int(ADMIN_ID):
         return await admins_start(update, context)
 
@@ -56,10 +48,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f'ТЭГ НОВЫЙ {update._effective_user.id} добавлен в таблицу user_tags ✌️')
 
     elif await get_user(update._effective_user.id):
-       logger.info(f'Пользователь{update._effective_user.id} снова пришел ❤️') # КАК ПРИСВОИТЬ/ ЗАМЕНИТЬ ТЭГ ЕСЛИ ПОЛЬЗОВАТЕЛЬ НЕ НОВЫЙ??
-       
+       logger.info(f'Пользователь{update._effective_user.id} снова пришел ❤️') 
        await rename_user_tag(update.effective_user.id,'новый', 'не новый')
-       logger.info('ОШИБКА  ТУТ🤮 ')
        logger.info(f'Пользователь{update._effective_user.id} добавлен в таблицу user_tags 🆗') 
        
     keyboard = [["Да", "Нет"]]
@@ -73,14 +63,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     job = context.job_queue.run_once(
         send_job_message,
         when=timedelta(seconds=30),
-        data={"message": "соберись", 'markup':markup},
-        name=f"send_job_message_{update.effective_user.id}", # ВОТ ТУТ  ДОБАВЛЯЕТСЯ В СЛОВАРЬ С ДАННЫМИ ПОЛЬЗОВАТЕЛЯ 
+        data={"message": jobtext["Первый"]},
+        name=f"send_job_message_{update.effective_user.id}", 
         chat_id=update.effective_user.id,
     )
     context.user_data['job_name'] = job.name
-    
     return FIRST_MASSAGE
-
 
 async def get_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     answer = update.effective_message.text
@@ -100,18 +88,51 @@ async def get_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="Чтобы получить консультацию, напиши свое имя.",
             reply_markup=markup,
         )
+
+        job = context.job_queue.run_once(
+        send_job_message,
+        when=timedelta(seconds=30),
+        data={"message": jobtext["Второй"]},
+        name=f"send_job_message_{update.effective_user.id}", 
+        chat_id=update.effective_user.id,
+    )
+        context.user_data['job_name'] = job.name      
         return GET_NAME
-    elif answer == "Нет":
+    elif answer.lower() in ["нет"]:
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Очень жаль, может быть в другой  раз...",
             reply_markup=ReplyKeyboardRemove(),
         )
         return GET_NAME
-
+    else:
+        keyboard = [["Да", "Нет"]]
+        markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
+        
+        await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Пожалуйста, выберите вариант ответа из представленных ниже',
+        reply_markup=markup,
+        parse_mode="MarkdownV2",
+    )
+    job = context.job_queue.run_once(
+        send_job_message,
+        when=timedelta(seconds=30),
+        data={"message": "Это всего лишь маленький опрос 🙃 поговори со мной", 'markup':markup},
+        name=f"send_job_message_{update.effective_user.id}", 
+        chat_id=update.effective_user.id,
+    )
+    context.user_data['job_name'] = job.name
+    return FIRST_MASSAGE
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     name = update.effective_message.text
+
+    if "job_name" in context.user_data:
+        job_name = context.user_data.pop('job_name')
+        for jobs in context.job_queue.get_jobs_by_name(job_name):
+            jobs.schedule_removal()
+
     await update_user(update.effective_user.id, name=name)
     context.user_data["name"] = name
     
@@ -119,11 +140,10 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     markup = ReplyKeyboardMarkup(keyboard)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="Чтобы продолжить, поделитесь контактом.",
+        text="Чтобы продолжить, нажмите на 'поделиться контактом'.",
         reply_markup=markup,
     )
     return GET_NUMBER
-
 
 async def get_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
     number = update.effective_message.contact.phone_number
@@ -135,7 +155,6 @@ async def get_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=update.effective_chat.id, text="Напишите свой e-mail.", reply_markup=ReplyKeyboardRemove()
         )
         return GET_MAIL
-
 
 async def get_mail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mail = update.effective_message.text
@@ -152,7 +171,6 @@ async def get_mail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return GET_AGREE
 
-
 async def get_agree(update: Update, context: ContextTypes.DEFAULT_TYPE):
     answer = update.effective_message.text
     if answer == "Да":
@@ -165,7 +183,6 @@ async def get_agree(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="Добро пожаловать в клуб! Жми FIT и получай гайд по тренировкам",
             reply_markup=markup,
         )
-        
         await context.bot.send_message(
             chat_id=ADMIN_ID, text= f'{context.user_data}'
         )
@@ -179,4 +196,4 @@ async def get_agree(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=markup
         )
 
-    print(context.user_data)
+    

@@ -8,7 +8,6 @@ from db.users_crud import get_users
 from db.user_tags_crud import (get_users_by_tag,)
 from logs.logger import logger
 
-
 async def admins_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keybord = [
         [InlineKeyboardButton('Список пользователей', callback_data = 'users_list')],
@@ -21,7 +20,6 @@ async def admins_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     murkup = InlineKeyboardMarkup(keybord)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Привет админ!", reply_markup=murkup)
     return ADMIN_START
-
 
 async def users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users = await get_users()
@@ -73,14 +71,6 @@ async def spam_send_messages(update: Update, context: ContextTypes.DEFAULT_TYPE)
     logger.info(f'Рассылка завершена')
     await admins_start(update, context)
 
-# async def new_tags_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     tag_id = await get_user_tag_id()
-#     user_id_tg = await get_user_tag_id()
-#     text = 'Список новых пользователей :\n'
-#     text += 'khbjhbjhvbjhnvb\n'
-#     for tag_id in user_tags():
-#         if tag_id == 1:
-#             text += user_id_tg
 
 async def new_users_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = 'Список пользователей c тэгом "новый" :\n'

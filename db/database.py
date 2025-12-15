@@ -34,7 +34,6 @@ async def create_tables(app):
         for tag in TAGS: 
             await conn.execute(f'''INSERT OR IGNORE INTO tags (name) VALUES (?)''', (tag,))
             # await conn.execute(stmt, (tag))
-
                             
     await conn.commit()
     await conn.close()

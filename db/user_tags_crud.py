@@ -31,7 +31,7 @@ async def rename_user_tag(user_id_tg:int, tag_name_old:str, tag_name_new:str):
             tag_id = await cursor.fetchone()
             # await conn.execute('UPDATE user_tags SET tag_id = ? WHERE id = ?', (tag_id[0], user_tags_data[0]))
             await conn.execute('UPDATE user_tags SET tag_id = ? WHERE id = ?', (tag_id, user_tags_data[0]))
-            logger.info('ОШИБКА после обновления  ТУТ 🤡')
+            # logger.info('ОШИБКА после обновления  ТУТ 🤡')
             await conn.commit()
             return True
         return False
